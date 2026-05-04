@@ -1,0 +1,38 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+f1-dashoard/.idea
+/.idea
+f1-dashoard/node_modules
+f1-dashoard/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+f1-dashoard/coverage
+
+# next.js
+f1-dashoard/.next/
+f1-dashoard/out/
+
+# production
+f1-dashoard/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
