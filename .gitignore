@@ -1,22 +1,22 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-f1-dashoard/.idea
+f1-dash/.idea
 /.idea
-f1-dashoard/node_modules
-f1-dashoard/.pnp
+f1-dash/node_modules
+f1-dash/.pnp
 .pnp.js
 .yarn/install-state.gz
 
 # testing
-f1-dashoard/coverage
+f1-dash/coverage
 
 # next.js
-f1-dashoard/.next/
-f1-dashoard/out/
+f1-dash/.next/
+f1-dash/out/
 
 # production
-f1-dashoard/build
+f1-dash/build
 
 # misc
 .DS_Store
