@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import SessionList from "@/components/f1/SessionList";
 import LapInfo from "@/components/f1/LapsInfo";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -12,15 +12,11 @@ export default function Page() {
     useEffect(() => {
         document.title = `Sessions (${year}) | F1 Dashboard`;
     }, [year]);
-
     return (
         <div>
-            <PageBreadcrumb pageTitle={`Sessions (${year})`} />
-            <LapInfo sessionKey={selectedSession} />
-            <SessionList
-                year={year}
-                onSelect={setSelectedSession}
-            />
+            <PageBreadcrumb pageTitle={`Sessions (${year})`}/>
+            <LapInfo sessionKey={selectedSession}/>
+            <SessionList year={year} onSelect={setSelectedSession}/>
 
         </div>
     );
