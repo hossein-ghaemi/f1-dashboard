@@ -1,31 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getDrivers } from "../../services/api";
+import useDriver from "@/hooks/useDriver";
 
-export default function DriverDetails({ data, onClose }) {
+export default function DriverDetails({data, onClose}) {
 
-    const [driver, setDriver] = useState({
-        full_name: "Loading..."
-    });
-
-    useEffect(() => {
-
-        if (!data) return;
-
-        const fetchDriver = async () => {
-
-            const res = await getDrivers(
-                data.session_key,
-                data.driver_number
-            );
-
-            setDriver(res[0]);
-        };
-
-        fetchDriver();
-
-    }, [data]);
 
     if (!data) return null;
 
@@ -38,27 +16,27 @@ export default function DriverDetails({ data, onClose }) {
 
                     <div className="col-span-1 flex justify-center">
                         <img
-                            src={driver.headshot_url}
+                            src={data.HeadshotUrl}
                             className="w-[110px] rounded-lg"
-                            alt={driver.full_name}
+                            alt={data.FullName}
                         />
                     </div>
 
                     <div className="col-span-2">
 
                         <h2 className="text-2xl font-bold mb-4">
-                            {driver.full_name}
+                            {data.FullName}
                         </h2>
 
                         <p>
-                            <strong>Broadcast name:</strong> {driver.broadcast_name}
+                            <strong>Broadcast name:</strong> {data.BroadcastName}
                         </p>
                         <p>
-                            <strong>Team:</strong> {driver.team_name}
+                            <strong>Team:</strong> {data.Team}
                         </p>
 
                         <p>
-                            <strong>Number:</strong> #{driver.driver_number}
+                            <strong>Number:</strong> #{data.DriverNumber}
                         </p>
 
                     </div>

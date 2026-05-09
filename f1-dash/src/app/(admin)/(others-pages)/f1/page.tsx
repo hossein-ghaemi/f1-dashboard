@@ -1,23 +1,16 @@
 "use client"
-import {useState, useEffect} from "react";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
 import SessionList from "@/components/f1/SessionList";
-import LapInfo from "@/components/f1/LapsInfo";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import React from "react";
+import SessionPage from "./sessionDetails/page";
 
-export default function Page() {
-    const [year, setYear] = useState(new Date().getFullYear());
-    const [selectedSession, setSelectedSession] = useState(null);
-
-    useEffect(() => {
-        document.title = `Sessions (${year}) | F1 Dashboard`;
-    }, [year]);
+export default function App() {
     return (
-        <div>
-            <PageBreadcrumb pageTitle={`Sessions (${year})`}/>
-            <LapInfo sessionKey={selectedSession}/>
-            <SessionList year={year} onSelect={setSelectedSession}/>
-
-        </div>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/f1" element={<SessionList year={2026}/>}/>
+                <Route path="/sessionDetails/:year/:round/:session"
+                       element={<SessionPage/>}/>
+            </Routes>
+        </BrowserRouter>
     );
 }

@@ -1,27 +1,140 @@
-"use client"
-import {useSearchParams} from "next/navigation";
-import {useEffect, useState} from "react";
-import {getSessionDetails} from "@/components/services/api";
-import Positions from "@/components/f1/positions/Positions";
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { compareDrivers, getSessionDetails } from "@/components/services/api";
+import PodiumBlocks from "@/components/f1/positions/PodiumBlocks";
+import OtherPositions from "@/components/f1/positions/OtherPositions";
+
 export default function SessionDetails() {
     const searchParams = useSearchParams();
-    const sessionKey = searchParams.get("sessionKey");
-    const positionRange = searchParams.get("position") ?? 3;
-    const [sessionDetails, setResults] = useState([]);
+
+    const year = searchParams.get("year");
+    const round = searchParams.get("round");
+    const session = searchParams.get("session");
+
+    const [compareImg, setCompareImg] = useState(null);
+    const [sessionDetails, setSession] = useState(null);
+    const [loading, setLoading] = useState(false);
+    // ---------------- FETCH SESSION ----------------
     useEffect(() => {
-        if (!sessionKey) return;
+        if (!year || !round || !session) return;
+
         const fetchData = async () => {
-            const data = await getSessionDetails(sessionKey, positionRange);
-            setResults(data);
+            setLoading(true);
+            try {
+                const data = await getSessionDetails(year, round, session);
+                setSession(data);
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchData();
-    }, [sessionKey, positionRange]);
+    }, [year, round, session]);
+
+    // ---------------- DERIVED DATA (SAFE) ----------------
+    const sortedDrivers = useMemo(() => {
+        return Object.values(sessionDetails?.drivers || {}).sort(
+            (a, b) => Number(a.Position) - Number(b.Position)
+        );
+    }, [sessionDetails]);
+
+    const podium = sortedDrivers.slice(0, 3);
+    const others = sortedDrivers.slice(3);
+
+    const driversString = podium.map(d => d.Abbreviation).join(",");
+
+    // ---------------- COMPARE PLOT ----------------
+    useEffect(() => {
+        if (!sessionDetails || !driversString) return;
+
+        compareDrivers(
+            year,
+            sessionDetails.round_number,
+            driversString,
+            sessionDetails.session_info?.Type
+        ).then((res) => {
+            setCompareImg(res.image);
+        });
+    }, [year, sessionDetails, driversString]);
+
+    // ---------------- LOADING STATES ----------------
+    if (loading) {
+        return <div className="p-6 text-white">Loading session details...</div>;
+    }
+
+    if (!sessionDetails) {
+        return <div className="p-6">No session data found</div>;
+    }
+
+    // ---------------- UI ----------------
     return (
-        <div className="p-4 text-gray-300">
-            <h1>Session Details</h1>
-            <p>Session Key: {sessionKey}</p>
-            <Positions results={sessionDetails}/>
+        <div className="max-w-5xl mx-auto p-6 space-y-6 text-gray-900 dark:text-gray-100">
+
+            {/* Header */}
+            <div
+                className="border rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm bg-cover bg-center"
+                style={{
+                    backgroundImage: `url(/images/flags/${sessionDetails.country_lowercase}.jpeg)`,
+                }}
+            >
+                <h1 className="text-2xl font-bold">
+                    {sessionDetails.event_name}
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                    {sessionDetails.country}
+                </p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="border rounded-xl p-4 bg-white dark:bg-gray-900">
+                    <p className="text-sm text-white">Total Laps</p>
+                    <p className="text-xl font-semibold text-gray-400">
+                        {sessionDetails.total_laps}
+                    </p>
+                </div>
+
+                <div className="border rounded-xl p-4 bg-white dark:bg-gray-900">
+                    <p className="text-sm text-white">Drivers</p>
+                    <p className="text-xl font-semibold text-gray-400">
+                        {Object.values(sessionDetails.drivers || {}).length}
+                    </p>
+                </div>
+
+                <div className="border rounded-xl p-4 bg-white dark:bg-gray-900">
+                    <p className="text-sm text-white">Session Status</p>
+                    <p className="text-xl font-semibold text-gray-400">
+                        {sessionDetails.session_info?.SessionStatus}
+                    </p>
+                </div>
+            </div>
+
+            {/* Drivers */}
+            <div className="border rounded-xl p-5 bg-white dark:bg-gray-900">
+                <h2 className="text-lg font-semibold mb-3">Drivers</h2>
+
+                <PodiumBlocks results={podium} />
+
+                {compareImg && (
+                    <img
+                        src={`data:image/png;base64,${compareImg}`}
+                        alt="Driver Comparison"
+                        width="600"
+                        className="mx-auto rounded-lg mb-4"
+                    />
+                )}
+
+                <OtherPositions results={others} />
+            </div>
+
+            {/* Debug */}
+            <div className="border rounded-xl p-5 bg-white dark:bg-gray-900">
+                <pre className="text-xs overflow-auto bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
+                    {JSON.stringify(sessionDetails.session_info, null, 2)}
+                </pre>
+            </div>
         </div>
     );
 }

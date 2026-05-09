@@ -1,19 +1,19 @@
 import PodiumBlock from "./PodiumBlock";
 
-export default function PodiumBlocks({ results = [] }) {
+export default function PodiumBlocks({ results}) {
 
     const p1 = results.find(
-        r => Number(r.position) === 1
+        r => Number(r.Position) === 1
     );
 
     const p2 = results.find(
-        r => Number(r.position) === 2
+        r => Number(r.Position) === 2
     );
 
     const p3 = results.find(
-        r => Number(r.position) === 3
+        r => Number(r.Position) === 3
     );
-    console.log(p1)
+
     return (
         <div className="flex items-end justify-center gap-6 mt-10">
 
