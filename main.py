@@ -105,21 +105,33 @@ def compare_drivers(year: int, round_number: int, drivers: str, identifier: str)
     fig.patch.set_facecolor("#0B0B0B")
     ax.set_facecolor("#0B0B0B")
 
-    # ---------- TEXT COLORS ----------
+    # ---------- COLORS ----------
     ax.tick_params(colors="white")
-    ax.xaxis.label.set_color("white")
-    ax.yaxis.label.set_color("white")
-    ax.title.set_color("white")
 
-    # ---------- GRID ----------
+    ax.set_title(
+        "Driver Comparison - Lap Time Analysis",
+        fontsize=16,
+        fontweight="bold",
+        color="white"
+    )
+
+    ax.set_xlabel("Lap Number", fontsize=12, color="white")
+    ax.set_ylabel("Lap Time (seconds)", fontsize=12, color="white")
+
     ax.grid(True, linestyle="--", alpha=0.2, color="white")
 
-    # ---------- PLOT ----------
     colors = ["#FF1801", "#00D2BE", "#DC0000", "#1E41FF"]
 
+    all_laps = []
+
+    # ---------- PLOT ----------
     for i, d in enumerate(driver_list):
         laps = session.laps.pick_driver(d)
+
         lap_times = laps["LapTime"].dt.total_seconds()
+
+        # store for axis scaling
+        all_laps.append(lap_times)
 
         ax.plot(
             laps["LapNumber"],
@@ -129,12 +141,24 @@ def compare_drivers(year: int, round_number: int, drivers: str, identifier: str)
             label=d
         )
 
+    # ---------- SAFE AXIS SCALING ----------
+    valid_values = [v.dropna() for v in all_laps if v is not None and not v.dropna().empty]
+
+    if valid_values:
+        y_min = min(v.min() for v in valid_values)
+        y_max = max(v.max() for v in valid_values)+10
+
+        ax.set_ylim(y_min - 1, y_max + 1)
+
+    ax.set_xlim(left=1)
+
     # ---------- LEGEND ----------
     leg = ax.legend(frameon=False)
     for text in leg.get_texts():
         text.set_color("white")
 
     plt.tight_layout()
+
     # ---------- EXPORT ----------
     buf = io.BytesIO()
     plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
@@ -142,8 +166,7 @@ def compare_drivers(year: int, round_number: int, drivers: str, identifier: str)
 
     img = base64.b64encode(buf.read()).decode("utf-8")
 
-    return {"image": img}#
-# @app.get("/sessionDetails")
+    return {"image": img}# @app.get("/sessionDetails")
 # async def get_sessions(session_key: int, position: int):
 #     async with httpx.AsyncClient() as client:
 #         res = await client.get(

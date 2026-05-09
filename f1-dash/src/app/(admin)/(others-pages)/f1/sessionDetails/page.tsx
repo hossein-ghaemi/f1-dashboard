@@ -71,6 +71,7 @@ export default function SessionDetails() {
     // ---------------- UI ----------------
     return (
         <div className="max-w-5xl mx-auto p-6 space-y-6 text-gray-900 dark:text-gray-100">
+        <div className="text-white text-5xl border-b-2 py-3 mb-4"><h2>Session Details</h2></div>
 
             {/* Header */}
             <div

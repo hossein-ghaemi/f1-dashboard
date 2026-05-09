@@ -25,6 +25,7 @@ export default function SessionList({year}) {
         }, {});
     }, [sessions]);
     return (<div className="space-y-3">
+        <div className="text-white text-5xl border-b-2 py-3 mb-4"><h2>Sessions</h2></div>
         {Object.entries(grouped).map(([country, events]) => (<div
             key={country}
             className=" dark:border-gray-700">
