@@ -284,37 +284,6 @@ Frontend will run on:
 ```text
 http://localhost:3000
 ```
-
----
-
-# API Examples
-
-## Sessions
-
-```http
-GET /sessions?year=2024
-```
-
-## Session Results
-
-```http
-GET /positions?session_key=12345
-```
-
-## Driver Details
-
-```http
-GET /drivers?session_key=12345&driver_number=16
-```
-
-## Circuit Info
-
-```http
-GET /circuit-info?year=2024&round_number=10&identifier=Q
-```
-
----
-
 # Example Screens
 
 Potential dashboard views:
