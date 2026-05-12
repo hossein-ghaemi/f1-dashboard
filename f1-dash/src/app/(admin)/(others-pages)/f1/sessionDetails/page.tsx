@@ -5,6 +5,32 @@ import { useState, useEffect, useMemo } from "react";
 import { compareDrivers, getSessionDetails } from "@/components/services/api";
 import PodiumBlocks from "@/components/f1/positions/PodiumBlocks";
 import OtherPositions from "@/components/f1/positions/OtherPositions";
+import TrackMap from "../track_map/page";
+type Driver = {
+    Abbreviation: string;
+    Position: string;
+    Driver: string;
+    Team: string;
+    Time: string;
+};
+
+type SessionDetailsData = {
+    event_name: string;
+    country: string;
+    country_lowercase: string;
+    total_laps: number;
+    session_info: {
+        Type: string;
+        SessionStatus: string;
+        [key: string]: any; // for any additional fields
+    };
+    round_number: string;
+    drivers: Record<string, Driver>;
+};
+
+type CompareResponse = {
+    image: string; // base64 encoded image
+};
 
 export default function SessionDetails() {
     const searchParams = useSearchParams();
@@ -114,10 +140,11 @@ export default function SessionDetails() {
 
             {/* Drivers */}
             <div className="border rounded-xl p-5 bg-white dark:bg-gray-900">
+            <div className="flex items-">
                 <h2 className="text-lg font-semibold mb-3">Drivers</h2>
-
+</div>
                 <PodiumBlocks results={podium} />
-
+                <TrackMap  />
                 {compareImg && (
                     <img
                         src={`data:image/png;base64,${compareImg}`}

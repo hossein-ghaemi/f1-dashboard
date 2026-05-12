@@ -1,8 +1,8 @@
-import {useEffect, useState, useMemo} from "react";
-import {getSessions} from "../services/api";
-import {useRouter} from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { getSessions } from "../services/api";
+import { useRouter } from "next/navigation";
 
-export default function SessionList({year}) {
+export default function SessionList({ year }) {
     const router = useRouter();
     const [sessions, setSessions] = useState([]);
     const [openCountry, setOpenCountry] = useState(null);
@@ -24,6 +24,7 @@ export default function SessionList({year}) {
             return acc;
         }, {});
     }, [sessions]);
+
     return (<div className="space-y-3">
         <div className="text-white text-5xl border-b-2 py-3 mb-4"><h2>Sessions</h2></div>
         {Object.entries(grouped).map(([country, events]) => (<div
@@ -33,9 +34,9 @@ export default function SessionList({year}) {
             <button
                 onClick={() => setOpenCountry(openCountry === country ? null : country)}
                 className="w-full rounded-lg  text-left font-medium bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-300 bg-center bg-cover background-blend-mode" style={{
-        backgroundImage: `url(/images/flags/${country.toLocaleLowerCase().replace(" ","")}.jpeg)`,
-    }}>
-                <div className="p-7" style={{background: "linear-gradient(45deg, #00000061, transparent)"}}>{country}</div>
+                    backgroundImage: `url(/images/flags/${country.toLocaleLowerCase().replace(" ", "")}.jpeg)`,
+                }}>
+                <div className="p-7" style={{ background: "linear-gradient(45deg, #00000061, transparent)" }}>{country}</div>
             </button>
 
             {/* Events */}

@@ -5,7 +5,6 @@ const API_BASE = "http://localhost:8000";
 
 export const getSessions = async (year = (new Date().getFullYear())) => {
     const res = await axios.get(`${API_BASE}/f1Sessions`);
-    console.log(res)
     return res.data;
 };
 
@@ -27,8 +26,7 @@ export const getDrivers = async (sessionKey, driverNumber) => {
     return res.data;
 };
 
-export const compareDrivers =  async (year, round_number, drivers,identifier) => {
-    console.log(round_number)
+export const compareDrivers = async (year, round_number, drivers, identifier) => {
     const res = await axios.get(`${API_BASE}/compare-drivers`, {
         params: {
             year,
@@ -37,6 +35,16 @@ export const compareDrivers =  async (year, round_number, drivers,identifier) =>
             identifier
         },
     });
-    console.log(res)
+    return res.data;
+};
+
+export const trackMap = async (year, round_number, identifier) => {
+    const res = await axios.get(`${API_BASE}/track-map`, {
+        params: {
+            year,
+            round_number,
+            identifier
+        },
+    });
     return res.data;
 };

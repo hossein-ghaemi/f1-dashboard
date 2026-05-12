@@ -89,10 +89,8 @@ async def get_session_details(year: int, round_number: int, identifier: str):
     }
     #
     return result
-
-
+#
 @app.get("/compare-drivers")
-
 def compare_drivers(year: int, round_number: int, drivers: str, identifier: str):
     driver_list = drivers.split(",")
 
@@ -142,11 +140,12 @@ def compare_drivers(year: int, round_number: int, drivers: str, identifier: str)
         )
 
     # ---------- SAFE AXIS SCALING ----------
-    valid_values = [v.dropna() for v in all_laps if v is not None and not v.dropna().empty]
+    valid_values = [v.dropna()
+                    for v in all_laps if v is not None and not v.dropna().empty]
 
     if valid_values:
         y_min = min(v.min() for v in valid_values)
-        y_max = max(v.max() for v in valid_values)+10
+        y_max = max(v.max() for v in valid_values) + 10
 
         ax.set_ylim(y_min - 1, y_max + 1)
 
@@ -166,23 +165,20 @@ def compare_drivers(year: int, round_number: int, drivers: str, identifier: str)
 
     img = base64.b64encode(buf.read()).decode("utf-8")
 
-    return {"image": img}# @app.get("/sessionDetails")
-# async def get_sessions(session_key: int, position: int):
-#     async with httpx.AsyncClient() as client:
-#         res = await client.get(
-#             f"{BASE_URL}/session_result",
-#             params={"session_key": session_key,"position<": position }
-#         )
-#         return res.json()
-#
-#
-# @app.get("/laps")
-# async def get_laps(session_key: int):
-#     async with httpx.AsyncClient() as client:
-#         res = await client.get(f"{BASE_URL}/laps", params={"session_key": session_key})
-#         return res.json()
-# @app.get("/drivers")
-# async def get_laps(session_key: int, driver_number: int):
-#     async with httpx.AsyncClient() as client:
-#         res = await client.get(f"{BASE_URL}/drivers", params={"session_key": session_key,'driver_number':driver_number})
-#         return res.json()
+    return {"image": img}  # @app.get("/sessionDetails")
+
+
+@app.get("/track-map")
+async def track_map(year: int, round_number: int, identifier: str):
+    session = fastf1.get_session(year, round_number, identifier)
+    session.load()
+    lap = session.laps.pick_fastest() #Because fastest lap is clean and complete
+    pos = lap.get_pos_data()
+    circuit = session.get_circuit_info()
+    track = pos.loc[:, ("X", "Y")].to_dict(orient="records")
+    corners = circuit.corners.to_dict(orient="records")
+    return {
+        "rotation": float(circuit.rotation),
+        "track": track,
+        "corners": corners
+    }

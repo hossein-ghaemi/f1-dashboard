@@ -7,7 +7,6 @@ export default function OtherPositions({results}) {
 
     const [openDriverDetails, setOpenDriverDetails] = useState(false);
     const [selectedDriver, setSelectedDriver] = useState(null);
-    console.log(results);
     return (<>
         {/* Modal (ONLY ONCE) */}
         {openDriverDetails && selectedDriver && (<DriverDetails
@@ -48,7 +47,8 @@ export default function OtherPositions({results}) {
                         <div className="text-sm opacity-70">
                             Status: {driver.Status} -
                             Time: {driver.Time ? Number(driver.Time).toFixed(4) : "-"} -
-                            Points: {driver.Points}
+
+
                         </div>
 
                     </div>
