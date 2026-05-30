@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 import fastf1
 import matplotlib.pyplot as plt
 import io
 import base64
+import asyncio
+import httpx
 
 app = FastAPI()
 
@@ -15,6 +17,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import livef1
+
+# Get a specific race session
+session = livef1.get_session(
+    season=2026,
+    meeting_identifier="villeneuve",
+    session_identifier="Practice 1"
+)
+
+# Load position data
+position_data = session.get_data(
+    dataNames="Position.z"
+)
+
+print(position_data.head())
 
 @app.get("/f1Sessions")
 async def get_sessions(year: int = 2026):
@@ -182,3 +199,22 @@ async def track_map(year: int, round_number: int, identifier: str):
         "track": track,
         "corners": corners
     }
+
+@app.websocket("/ws/live")
+async def live_feed(ws: WebSocket):
+
+    await ws.accept()
+
+    while True:
+
+        async with httpx.AsyncClient() as client:
+
+            r = await client.get(
+                "https://api.openf1.org/v1/position"
+            )
+
+            data = r.json()
+
+        await ws.send_json(data)
+
+        await asyncio.sleep(1)

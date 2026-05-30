@@ -54,8 +54,8 @@ export default function TrackMap() {
         <div className="bg-gray-900 p-4 rounded-lg">
             <button
                 onClick={() => setOpenCircuit(openCircuit ? false : true)}
-                className="w-full rounded-lg  text-left font-medium bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-300 bg-center bg-cover background-blend-mode">
-                <div className="p-7" >{openCircuit ? "Hide" : "Show"} Track</div>
+                className="w-50 rounded-lg  text-left font-medium bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-300 bg-center bg-cover background-blend-mode">
+                <div className="text-center p-2" >{openCircuit ? "Hide" : "Show"} Track</div>
             </button>
             {openCircuit && (
                 <svg

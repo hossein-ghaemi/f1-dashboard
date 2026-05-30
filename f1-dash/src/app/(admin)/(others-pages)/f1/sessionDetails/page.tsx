@@ -97,7 +97,7 @@ export default function SessionDetails() {
     // ---------------- UI ----------------
     return (
         <div className="max-w-5xl mx-auto p-6 space-y-6 text-gray-900 dark:text-gray-100">
-        <div className="text-white text-5xl border-b-2 py-3 mb-4"><h2>Session Details</h2></div>
+            <div className="text-white text-5xl border-b-2 py-3 mb-4"><h2>Session Details</h2></div>
 
             {/* Header */}
             <div
@@ -140,11 +140,15 @@ export default function SessionDetails() {
 
             {/* Drivers */}
             <div className="border rounded-xl p-5 bg-white dark:bg-gray-900">
-            <div className="flex items-">
-                <h2 className="text-lg font-semibold mb-3">Drivers</h2>
-</div>
+                <div className="flex items-">
+                    <h2 className="text-lg font-semibold mb-3">Drivers</h2>
+                </div>
                 <PodiumBlocks results={podium} />
-                <TrackMap  />
+                <button
+                    className="w-50 rounded-lg  text-left font-medium bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-300 bg-center bg-cover background-blend-mode" >
+                    <div className="p-2 text-center" style={{ background: "linear-gradient(45deg, #00000061, transparent)" }}>Compare Top 3 Drivers</div>
+                </button>
+                <TrackMap />
                 {compareImg && (
                     <img
                         src={`data:image/png;base64,${compareImg}`}

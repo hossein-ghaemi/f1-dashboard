@@ -1,0 +1,246 @@
+2026-05-22 18:37:16 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:37:16 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:37:16 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : FORMULA 1 ROLEX BELGIAN GRAND PRIX 2024
+	Meeting Name : Belgian Grand Prix
+	Meeting Circuit Shortname : Spa-Francorchamps
+2026-05-22 18:37:16 - livef1 - INFO - Got the meeting.
+2026-05-22 18:37:16 - livef1 - INFO - Selected meeting/session is:
+	session_name : Race
+2026-05-22 18:37:16 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:37:17 - livef1 - INFO - Fetching drivers.
+2026-05-22 18:37:17 - livef1 - INFO - Driver standings have been loaded and saved to 'session.driverStandings'.
+2026-05-22 18:37:18 - livef1 - INFO - Constructor standings have been loaded and saved to 'session.constructorStandings'.
+2026-05-22 18:37:19 - livef1 - INFO - 'Position.z' has been fetched and parsed
+2026-05-22 18:37:26 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:37:26 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:37:26 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:37:26 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:37:26 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : FORMULA 1 ROLEX BELGIAN GRAND PRIX 2024
+	Meeting Name : Belgian Grand Prix
+	Meeting Circuit Shortname : Spa-Francorchamps
+2026-05-22 18:37:26 - livef1 - INFO - Got the meeting.
+2026-05-22 18:37:26 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : FORMULA 1 ROLEX BELGIAN GRAND PRIX 2024
+	Meeting Name : Belgian Grand Prix
+	Meeting Circuit Shortname : Spa-Francorchamps
+2026-05-22 18:37:26 - livef1 - INFO - Got the meeting.
+2026-05-22 18:37:26 - livef1 - INFO - Selected meeting/session is:
+	session_name : Race
+2026-05-22 18:37:26 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:37:26 - livef1 - INFO - Selected meeting/session is:
+	session_name : Race
+2026-05-22 18:37:26 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:37:26 - livef1 - INFO - Fetching drivers.
+2026-05-22 18:37:26 - livef1 - INFO - Fetching drivers.
+2026-05-22 18:37:26 - livef1 - INFO - Driver standings have been loaded and saved to 'session.driverStandings'.
+2026-05-22 18:37:26 - livef1 - INFO - Driver standings have been loaded and saved to 'session.driverStandings'.
+2026-05-22 18:37:26 - livef1 - INFO - Constructor standings have been loaded and saved to 'session.constructorStandings'.
+2026-05-22 18:37:26 - livef1 - INFO - Constructor standings have been loaded and saved to 'session.constructorStandings'.
+2026-05-22 18:37:29 - livef1 - INFO - 'Position.z' has been fetched and parsed
+2026-05-22 18:37:29 - livef1 - INFO - 'Position.z' has been fetched and parsed
+2026-05-22 18:38:14 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:38:14 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:38:14 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Belgian Grand Prix
+	Meeting Circuit Shortname : spa
+2026-05-22 18:38:14 - livef1 - INFO - Got the meeting.
+2026-05-22 18:38:14 - livef1 - INFO - Selected meeting/session is:
+	session_name : Race
+2026-05-22 18:38:14 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:38:14 - livef1 - INFO - Fetching drivers.
+2026-05-22 18:38:28 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:38:28 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:38:28 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:28 - livef1 - INFO - The identifier is very close to 'monza' at column 'MEETING CIRCUIT SHORTNAME'
+2026-05-22 18:38:28 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Italian Grand Prix
+	Meeting Circuit Shortname : monza
+2026-05-22 18:38:28 - livef1 - INFO - Got the meeting.
+2026-05-22 18:38:28 - livef1 - INFO - Selected meeting/session is:
+	session_name : Race
+2026-05-22 18:38:28 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:38:28 - livef1 - INFO - Fetching drivers.
+2026-05-22 18:38:35 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:38:35 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:38:35 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:35 - livef1 - ERROR - LiveF1Error - 
+The searched query 'Mont' not found in the table. Did you mean one of these :
+
+	Meeting Offname : 
+	Meeting Name : Italian Grand Prix
+	Meeting Circuit Shortname : monza
+	> Suggested search queries : [[''], ['italian'], ['monza']]
+
+	Meeting Offname : 
+	Meeting Name : Monaco Grand Prix
+	Meeting Circuit Shortname : monaco
+	> Suggested search queries : [[''], ['monaco'], ['monaco']]
+
+	Meeting Offname : FORMULA 1 ARAMCO PRE-SEASON TESTING 2 2026
+	Meeting Name : Pre-Season Testing
+	Meeting Circuit Shortname : Sakhir
+	> Suggested search queries : [['aramco', 'pre', 'season', 'testing', '2', '2026'], ['pre', 'season', 'testing'], ['sakhir']]
+
+
+2026-05-22 18:38:38 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:38:38 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:38:38 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:38 - livef1 - INFO - The identifier is very close to 'monza' at column 'MEETING CIRCUIT SHORTNAME'
+2026-05-22 18:38:38 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Italian Grand Prix
+	Meeting Circuit Shortname : monza
+2026-05-22 18:38:38 - livef1 - INFO - Got the meeting.
+2026-05-22 18:38:38 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:38 - livef1 - INFO - The identifier is very close to 'Practice 1' at column 'SESSION_NAME'
+2026-05-22 18:38:38 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:38:38 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:38:42 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:38:42 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:38:42 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:42 - livef1 - INFO - The identifier is very close to 'monza' at column 'MEETING CIRCUIT SHORTNAME'
+2026-05-22 18:38:42 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Italian Grand Prix
+	Meeting Circuit Shortname : monza
+2026-05-22 18:38:42 - livef1 - INFO - Got the meeting.
+2026-05-22 18:38:42 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:42 - livef1 - INFO - The identifier is very close to 'Practice 1' at column 'SESSION_NAME'
+2026-05-22 18:38:42 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:38:42 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:38:58 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:38:58 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:38:58 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:58 - livef1 - ERROR - LiveF1Error - 
+The searched query 'cad' not found in the table. Did you mean one of these :
+
+	Meeting Offname : 
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+	> Suggested search queries : [[''], ['canadian'], ['villeneuve']]
+
+	Meeting Offname : 
+	Meeting Name : Spanish Grand Prix
+	Meeting Circuit Shortname : madring
+	> Suggested search queries : [[''], ['spanish'], ['madring']]
+
+	Meeting Offname : 
+	Meeting Name : Barcelona Grand Prix
+	Meeting Circuit Shortname : catalunya
+	> Suggested search queries : [[''], ['barcelona'], ['catalunya']]
+
+
+2026-05-22 18:38:59 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:38:59 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:38:59 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:38:59 - livef1 - ERROR - LiveF1Error - 
+The searched query 'cad' not found in the table. Did you mean one of these :
+
+	Meeting Offname : 
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+	> Suggested search queries : [[''], ['canadian'], ['villeneuve']]
+
+	Meeting Offname : 
+	Meeting Name : Spanish Grand Prix
+	Meeting Circuit Shortname : madring
+	> Suggested search queries : [[''], ['spanish'], ['madring']]
+
+	Meeting Offname : 
+	Meeting Name : Barcelona Grand Prix
+	Meeting Circuit Shortname : catalunya
+	> Suggested search queries : [[''], ['barcelona'], ['catalunya']]
+
+
+2026-05-22 18:40:39 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:40:39 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:40:39 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+2026-05-22 18:40:39 - livef1 - INFO - Got the meeting.
+2026-05-22 18:40:39 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:40:39 - livef1 - INFO - The identifier is very close to 'Practice 1' at column 'SESSION_NAME'
+2026-05-22 18:40:39 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:40:39 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:40:39 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:40:40 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:40:40 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+2026-05-22 18:40:40 - livef1 - INFO - Got the meeting.
+2026-05-22 18:40:40 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 18:40:40 - livef1 - INFO - The identifier is very close to 'Practice 1' at column 'SESSION_NAME'
+2026-05-22 18:40:40 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:40:40 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:42:41 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:42:41 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:42:41 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+2026-05-22 18:42:41 - livef1 - INFO - Got the meeting.
+2026-05-22 18:42:41 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:42:41 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:42:42 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:42:43 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:42:43 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+2026-05-22 18:42:43 - livef1 - INFO - Got the meeting.
+2026-05-22 18:42:43 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:42:43 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:43:38 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:43:38 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:43:38 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+2026-05-22 18:43:38 - livef1 - INFO - Got the meeting.
+2026-05-22 18:43:38 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:43:38 - livef1 - INFO - The session was received successfully.
+2026-05-22 18:43:39 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 18:43:39 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 18:43:39 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : Canadian Grand Prix
+	Meeting Circuit Shortname : villeneuve
+2026-05-22 18:43:39 - livef1 - INFO - Got the meeting.
+2026-05-22 18:43:39 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-05-22 18:43:39 - livef1 - INFO - The session was received successfully.
+2026-05-22 22:23:41 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-05-22 22:23:41 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-05-22 22:23:41 - livef1 - INFO - The identifier couldn't be found.
+2026-05-22 22:23:41 - livef1 - ERROR - LiveF1Error - 
+The searched query 'villeneuve' not found in the table. Did you mean one of these :
+
+	Meeting Offname : 
+	Meeting Name : British Grand Prix
+	Meeting Circuit Shortname : silverstone
+	> Suggested search queries : [[''], ['british'], ['silverstone']]
+
+	Meeting Offname : 
+	Meeting Name : Italian Grand Prix
+	Meeting Circuit Shortname : monza
+	> Suggested search queries : [[''], ['italian'], ['monza']]
+
+	Meeting Offname : FORMULA 1 HEINEKEN CHINESE GRAND PRIX 2026
+	Meeting Name : Chinese Grand Prix
+	Meeting Circuit Shortname : Shanghai
+	> Suggested search queries : [['heineken', 'chinese', '2026'], ['chinese'], ['shanghai']]
+
+
