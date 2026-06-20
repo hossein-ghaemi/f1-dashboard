@@ -36,7 +36,7 @@ export default function SessionList({ year }) {
                 className="w-full rounded-lg  text-left font-medium bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-300 bg-center bg-cover background-blend-mode" style={{
                     backgroundImage: `url(/images/flags/${country.toLocaleLowerCase().replace(" ", "")}.jpeg)`,
                 }}>
-                <div className="p-7" style={{ background: "linear-gradient(45deg, #00000061, transparent)" }}>{country}</div>
+                <div className="" style={{ background: "linear-gradient(45deg, #00000061, transparent)",padding: "50px" }}>{country}</div>
             </button>
 
             {/* Events */}
