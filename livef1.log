@@ -244,3 +244,57 @@ The searched query 'villeneuve' not found in the table. Did you mean one of thes
 	> Suggested search queries : [['heineken', 'chinese', '2026'], ['chinese'], ['shanghai']]
 
 
+2026-06-20 11:52:30 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-06-20 11:52:30 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-06-20 11:52:30 - livef1 - INFO - The identifier couldn't be found.
+2026-06-20 11:52:30 - livef1 - ERROR - LiveF1Error - 
+The searched query 'villeneuve' not found in the table. Did you mean one of these :
+
+	Meeting Offname : 
+	Meeting Name : British Grand Prix
+	Meeting Circuit Shortname : silverstone
+	> Suggested search queries : [[''], ['british'], ['silverstone']]
+
+	Meeting Offname : 
+	Meeting Name : Italian Grand Prix
+	Meeting Circuit Shortname : monza
+	> Suggested search queries : [[''], ['italian'], ['monza']]
+
+	Meeting Offname : FORMULA 1 HEINEKEN CHINESE GRAND PRIX 2026
+	Meeting Name : Chinese Grand Prix
+	Meeting Circuit Shortname : Shanghai
+	> Suggested search queries : [['heineken', 'chinese', '2026'], ['chinese'], ['shanghai']]
+
+
+2026-06-20 11:53:26 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-06-20 11:53:26 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-06-20 11:53:26 - livef1 - INFO - The identifier couldn't be found.
+2026-06-20 11:53:26 - livef1 - ERROR - LiveF1Error - 
+The searched query 'villeneuve' not found in the table. Did you mean one of these :
+
+	Meeting Offname : 
+	Meeting Name : British Grand Prix
+	Meeting Circuit Shortname : silverstone
+	> Suggested search queries : [[''], ['british'], ['silverstone']]
+
+	Meeting Offname : 
+	Meeting Name : Italian Grand Prix
+	Meeting Circuit Shortname : monza
+	> Suggested search queries : [[''], ['italian'], ['monza']]
+
+	Meeting Offname : FORMULA 1 HEINEKEN CHINESE GRAND PRIX 2026
+	Meeting Name : Chinese Grand Prix
+	Meeting Circuit Shortname : Shanghai
+	> Suggested search queries : [['heineken', 'chinese', '2026'], ['chinese'], ['shanghai']]
+
+
+2026-06-20 11:53:40 - livef1 - INFO - Driver standings have been loaded and saved to 'season.driverStandings'.
+2026-06-20 11:53:40 - livef1 - INFO - Constructor standings have been loaded and saved to 'season.constructorStandings'.
+2026-06-20 11:53:40 - livef1 - INFO - Selected meeting/session is:
+	Meeting Offname : None
+	Meeting Name : British Grand Prix
+	Meeting Circuit Shortname : silverstone
+2026-06-20 11:53:40 - livef1 - INFO - Got the meeting.
+2026-06-20 11:53:40 - livef1 - INFO - Selected meeting/session is:
+	session_name : Practice 1
+2026-06-20 11:53:40 - livef1 - INFO - The session was received successfully.

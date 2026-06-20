@@ -38,6 +38,17 @@ export const compareDrivers = async (year, round_number, drivers, identifier) =>
     return res.data;
 };
 
+export const lapTimeDistribution = async (year, country, identifier) => {
+    const res = await axios.get(`${API_BASE}/lapTimeDistribution`, {
+        params: {
+            year,
+            country,
+            identifier
+        },
+    });
+    return res.data;
+};
+
 export const trackMap = async (year, round_number, identifier) => {
     const res = await axios.get(`${API_BASE}/track-map`, {
         params: {

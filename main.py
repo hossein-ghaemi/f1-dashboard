@@ -1,11 +1,12 @@
-from fastapi import FastAPI,WebSocket
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-import fastf1
+import fastf1, fastf1.plotting
 import matplotlib.pyplot as plt
 import io
 import base64
 import asyncio
 import httpx
+import seaborn as sns
 
 app = FastAPI()
 
@@ -19,19 +20,20 @@ app.add_middleware(
 
 import livef1
 
-# Get a specific race session
-session = livef1.get_session(
-    season=2026,
-    meeting_identifier="villeneuve",
-    session_identifier="Practice 1"
-)
 
-# Load position data
-position_data = session.get_data(
-    dataNames="Position.z"
-)
-
-print(position_data.head())
+# # Get a specific race session
+# session = livef1.get_session(
+#     season=2026,
+#     meeting_identifier="silverstone",
+#     session_identifier="Practice 1"
+# )
+#
+# # Load position data
+# position_data = session.get_data(
+#     dataNames="Position.z"
+# )
+#
+# print(position_data.head())
 
 @app.get("/f1Sessions")
 async def get_sessions(year: int = 2026):
@@ -106,6 +108,8 @@ async def get_session_details(year: int, round_number: int, identifier: str):
     }
     #
     return result
+
+
 #
 @app.get("/compare-drivers")
 def compare_drivers(year: int, round_number: int, drivers: str, identifier: str):
@@ -189,7 +193,7 @@ def compare_drivers(year: int, round_number: int, drivers: str, identifier: str)
 async def track_map(year: int, round_number: int, identifier: str):
     session = fastf1.get_session(year, round_number, identifier)
     session.load()
-    lap = session.laps.pick_fastest() #Because fastest lap is clean and complete
+    lap = session.laps.pick_fastest()  # Because fastest lap is clean and complete
     pos = lap.get_pos_data()
     circuit = session.get_circuit_info()
     track = pos.loc[:, ("X", "Y")].to_dict(orient="records")
@@ -200,15 +204,13 @@ async def track_map(year: int, round_number: int, identifier: str):
         "corners": corners
     }
 
+
 @app.websocket("/ws/live")
 async def live_feed(ws: WebSocket):
-
     await ws.accept()
 
     while True:
-
         async with httpx.AsyncClient() as client:
-
             r = await client.get(
                 "https://api.openf1.org/v1/position"
             )
@@ -218,3 +220,58 @@ async def live_feed(ws: WebSocket):
         await ws.send_json(data)
 
         await asyncio.sleep(1)
+
+
+@app.get("/lapTimeDistribution")
+async def lap_time_distribution(year: int, country: str, identifier: str):
+    fastf1.plotting.setup_mpl(mpl_timedelta_support=True, color_scheme='fastf1')
+    race = fastf1.get_session(year, country, identifier)
+    race.load()
+
+    # derive top 3 finishers from classification (podium), not internal driver order
+    classification = race.results.sort_values("Position")
+    podium = classification.head(3)
+
+    point_finishers = podium["DriverNumber"].tolist()
+    driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
+
+    driver_laps = driver_laps.reset_index()
+
+    finishing_order = podium["Abbreviation"].tolist()
+
+    # create the figure
+    fix, ax = plt.subplots(figsize=(10, 6))
+
+    # Since 'seaborn' doesnt have proper timedelta support, we should convert timedelta to float (in sec)
+    driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
+    sns.violinplot(data=driver_laps,
+                   x="Driver",
+                   y="LapTime(s)",
+                   hue="Driver",
+                   inner=None,
+                   density_norm="area",
+                   order=finishing_order,
+                   palette=fastf1.plotting.get_driver_color_mapping(session=race)
+                   )
+
+    sns.swarmplot(data=driver_laps,
+                  x="Driver",
+                  y="LapTime(s)",
+                  order=finishing_order,
+                  hue="Compound",
+                  palette=fastf1.plotting.get_compound_mapping(session=race),
+                  hue_order=["SOFT", "MEDIUM", "HARD"],
+                  linewidth=0,
+                  size=4,
+                  )
+    ax.set_xlabel("Driver")
+    ax.set_ylabel("Lap Time (s)")
+    plt.suptitle(f"{year} {country} Grand Prix Lap Time Distribution")
+    plt.tight_layout()
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    buf.seek(0)
+
+    img = base64.b64encode(buf.read()).decode("utf-8")
+
+    return {"image": img}  # @app.get("/sessionDetails")

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useMemo } from "react";
-import { compareDrivers, getSessionDetails } from "@/components/services/api";
+import { compareDrivers, getSessionDetails, lapTimeDistribution } from "@/components/services/api";
 import PodiumBlocks from "@/components/f1/positions/PodiumBlocks";
 import OtherPositions from "@/components/f1/positions/OtherPositions";
 import TrackMap from "../track_map/page";
@@ -40,6 +40,7 @@ export default function SessionDetails() {
     const session = searchParams.get("session");
 
     const [compareImg, setCompareImg] = useState(null);
+    const [lapDistributionImg, setLapDistributionImg] = useState(null);
     const [sessionDetails, setSession] = useState(null);
     const [loading, setLoading] = useState(false);
     // ---------------- FETCH SESSION ----------------
@@ -70,6 +71,19 @@ export default function SessionDetails() {
     const others = sortedDrivers.slice(3);
 
     const driversString = podium.map(d => d.Abbreviation).join(",");
+
+    // ---------------- COMPARE LAP Time Distribution ----------------
+    useEffect(() => {
+        if (!sessionDetails || !driversString) return;
+
+        lapTimeDistribution(
+            year,
+            sessionDetails.event_name,
+            sessionDetails.session_info?.Type
+        ).then((res) => {
+            setLapDistributionImg(res.image);
+        });
+    }, [year, sessionDetails, driversString]);
 
     // ---------------- COMPARE PLOT ----------------
     useEffect(() => {
@@ -157,7 +171,14 @@ export default function SessionDetails() {
                         className="mx-auto rounded-lg mb-4"
                     />
                 )}
-
+                {lapDistributionImg && (
+                    <img
+                        src={`data:image/png;base64,${lapDistributionImg}`}
+                        alt="Lap Time Distribution"
+                        width="600"
+                        className="mx-auto rounded-lg mb-4"
+                    />
+                )}
                 <OtherPositions results={others} />
             </div>
 

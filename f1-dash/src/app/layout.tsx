@@ -7,7 +7,9 @@ import { ThemeProvider } from '@/context/ThemeContext';
 const outfit = Outfit({
   subsets: ["latin"],
 });
-
+export const metadata = {
+    title: "F1 Dashboard",
+};
 export default function RootLayout({
   children,
 }: Readonly<{
