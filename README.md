@@ -11,6 +11,14 @@ A modern Formula 1 analytics dashboard built with:
 The project provides interactive Formula 1 session exploration, podium visualization, driver details, and track analysis using official telemetry and timing data from FastF1.
 
 ---
+## 📸 Screenshots
+
+ <img src="docs/img/1.png" width="400"/> |   <img src="docs/img/5.png" width="400"/> 
+ <img src="docs/img/3.png" width="400"/> | <img src="docs/img/4.png" width="400"/> 
+
+<p align="center">
+  <img src="docs/img/2.png" width="400"/>
+</p>
 
 # Features
 
