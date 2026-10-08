@@ -1,277 +1,256 @@
-from fastapi import FastAPI, WebSocket
-from fastapi.middleware.cors import CORSMiddleware
-import fastf1, fastf1.plotting
-import matplotlib.pyplot as plt
-import io
-import base64
+"""HTTP API for historical F1 schedules, sessions, and charts."""
 import asyncio
+import base64
+from contextlib import asynccontextmanager, contextmanager
+from datetime import datetime, timezone
+import io
+import logging
+import os
+from pathlib import Path
+import threading
+
+import fastf1
+from fastf1.exceptions import DataNotLoadedError
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 import httpx
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 
-app = FastAPI()
+from backend.runtime import SessionCache, json_safe
 
+logger = logging.getLogger(__name__)
+plot_lock = threading.Lock()
+
+
+@asynccontextmanager
+async def lifespan(app):
+    cache_dir = Path(os.getenv("F1_CACHE_DIR", ".cache/fastf1"))
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    fastf1.Cache.enable_cache(str(cache_dir))
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=[v.strip() for v in os.getenv(
+        "CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+    ).split(",") if v.strip()],
+    allow_credentials=False,
+    allow_methods=["GET"],
     allow_headers=["*"],
 )
 
-import livef1
+
+def load_session(year, round_number, identifier):
+    session = fastf1.get_session(year, round_number, identifier)
+    session.load(weather=False)
+    return session
 
 
-# # Get a specific race session
-# session = livef1.get_session(
-#     season=2026,
-#     meeting_identifier="silverstone",
-#     session_identifier="Practice 1"
-# )
-#
-# # Load position data
-# position_data = session.get_data(
-#     dataNames="Position.z"
-# )
-#
-# print(position_data.head())
+session_cache = SessionCache(
+    load_session,
+    max_entries=int(os.getenv("F1_SESSION_CACHE_SIZE", "3")),
+    ttl_seconds=int(os.getenv("F1_SESSION_CACHE_TTL_SECONDS", "300")),
+)
+
+
+def get_session(year, round_number, identifier):
+    return session_cache.get(year, round_number, identifier)
+
+
+@contextmanager
+def data_errors():
+    try:
+        yield
+    except HTTPException:
+        raise
+    except (ValueError, KeyError, IndexError, DataNotLoadedError) as exc:
+        logger.info("F1 data unavailable: %s", exc)
+        raise HTTPException(404, "Requested F1 data is unavailable.") from exc
+    except Exception as exc:
+        logger.exception("F1 data operation failed")
+        raise HTTPException(502, "Unable to load F1 data. Please try again later.") from exc
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 
 @app.get("/f1Sessions")
-async def get_sessions(year: int = 2026):
-    schedule = fastf1.get_event_schedule(year)
-    return schedule.to_dict(orient="records")
+def get_sessions(year: int = Query(datetime.now(timezone.utc).year, ge=1950, le=2100)):
+    with data_errors():
+        return json_safe(fastf1.get_event_schedule(year))
 
 
 @app.get("/f1Sessionsx")
-async def get_sessions(year: int = 2026):
-    schedule = fastf1.get_event_schedule(year)
-
-    result = []
-
-    for _, row in schedule.iterrows():
-        sessions = []
-
-        for i in range(1, 6):
-            session = row.get(f"Session{i}")
-            if session:
-                sessions.append(session)
-
-        result.append({
-            "round": int(row["RoundNumber"]),
-            "country": row["Country"],
-            "location": row["Location"],
-            "event_name": row["EventName"],
-            "event_date": row["EventDate"],
-            "official_name": row["OfficialEventName"],
-            "event_format": row["EventFormat"],
-            "session1": row["Session1"],
-            "Session1Date": row["Session1Date"],
-            "session2": row["Session2"],
-            "Session2Date": row["Session2Date"],
-            "session3": row["Session3"],
-            "session3Date": row["Session3Date"],
-            "session4": row["Session4"],
-            "session4Date": row["Session4Date"],
-            "session5": row["Session5"],
-            "session5Date": row["Session5Date"],
-        })
-    return result
+def get_sessions_alternative(year: int = Query(datetime.now(timezone.utc).year, ge=1950, le=2100)):
+    with data_errors():
+        result = []
+        for _, row in fastf1.get_event_schedule(year).iterrows():
+            event = {
+                "round": row["RoundNumber"], "country": row["Country"],
+                "location": row["Location"], "event_name": row["EventName"],
+                "event_date": row["EventDate"], "official_name": row["OfficialEventName"],
+                "event_format": row["EventFormat"],
+            }
+            for i in range(1, 6):
+                event[f"session{i}"] = row.get(f"Session{i}")
+                date_key = f"Session{i}Date" if i <= 2 else f"session{i}Date"
+                event[date_key] = row.get(f"Session{i}Date")
+            result.append(event)
+        return json_safe(result)
 
 
 @app.get("/getEvent")
-async def get_event(year: int, round_number: int):
-    eventDetails = fastf1.get_event(year, round_number).to_dict()
-    if eventDetails:
-        return eventDetails
-    return {"error": "Event not found"}
+def get_event(year: int = Query(..., ge=1950, le=2100), round_number: int = Query(..., ge=0)):
+    with data_errors():
+        return json_safe(fastf1.get_event(year, round_number))
 
 
 @app.get("/sessionDetails")
-async def get_session_details(year: int, round_number: int, identifier: str):
-    session = fastf1.get_session(year, round_number, identifier)
+def get_session_details(year: int = Query(..., ge=1950, le=2100),
+                        round_number: int = Query(..., ge=0),
+                        identifier: str = Query(..., min_length=1, max_length=64)):
+    with data_errors():
+        session = get_session(year, round_number, identifier)
+        records = json_safe(session.results)
+        laps = session.laps.get("LapNumber", pd.Series(dtype=float)).dropna()
+        return json_safe({
+            "year": year,
+            "identifier": identifier,
+            "country": session.event["Country"],
+            "country_lowercase": session.event["Country"].lower().replace(" ", ""),
+            "round_number": int(session.event["RoundNumber"]),
+            "event_name": session.event["EventName"],
+            # Maximum completed lap number across drivers; zero if none recorded.
+            "total_laps": int(laps.max()) if not laps.empty else 0,
+            "drivers": {str(row["DriverNumber"]): row for row in records},
+            "results": records,
+            "session_info": session.session_info,
+            "track_status": session.track_status,
+        })
 
-    # Load data (this triggers data download + parsing)
-    session.load()
-    drivers = {}
-    for index, row in session.results.iterrows():
-        drivers[row.DriverNumber] = row
 
-    result = {
-        "country": session.event["Country"],
-        "country_lowercase": session.event["Country"].lower().replace(" ", ""),
-        "round_number": session.session_info['Meeting']["Number"],
-        "event_name": session.event["EventName"],
-        "total_laps": len(session.laps),
-        "drivers": drivers,
-        "results": session.results,
-        "session_info": session.session_info,
-        "track_status": session.track_status,
-    }
-    #
-    return result
+def encode_figure(fig):
+    with io.BytesIO() as buf:
+        fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+        return {"image": base64.b64encode(buf.getvalue()).decode("ascii")}
 
 
-#
 @app.get("/compare-drivers")
-def compare_drivers(year: int, round_number: int, drivers: str, identifier: str):
-    driver_list = drivers.split(",")
-
-    session = fastf1.get_session(year, round_number, identifier)
-    session.load()
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    # ---------- BACKGROUND ----------
-    fig.patch.set_facecolor("#0B0B0B")
-    ax.set_facecolor("#0B0B0B")
-
-    # ---------- COLORS ----------
-    ax.tick_params(colors="white")
-
-    ax.set_title(
-        "Driver Comparison - Lap Time Analysis",
-        fontsize=16,
-        fontweight="bold",
-        color="white"
-    )
-
-    ax.set_xlabel("Lap Number", fontsize=12, color="white")
-    ax.set_ylabel("Lap Time (seconds)", fontsize=12, color="white")
-
-    ax.grid(True, linestyle="--", alpha=0.2, color="white")
-
-    colors = ["#FF1801", "#00D2BE", "#DC0000", "#1E41FF"]
-
-    all_laps = []
-
-    # ---------- PLOT ----------
-    for i, d in enumerate(driver_list):
-        laps = session.laps.pick_driver(d)
-
-        lap_times = laps["LapTime"].dt.total_seconds()
-
-        # store for axis scaling
-        all_laps.append(lap_times)
-
-        ax.plot(
-            laps["LapNumber"],
-            lap_times,
-            color=colors[i % len(colors)],
-            linewidth=2.5,
-            label=d
-        )
-
-    # ---------- SAFE AXIS SCALING ----------
-    valid_values = [v.dropna()
-                    for v in all_laps if v is not None and not v.dropna().empty]
-
-    if valid_values:
-        y_min = min(v.min() for v in valid_values)
-        y_max = max(v.max() for v in valid_values) + 10
-
-        ax.set_ylim(y_min - 1, y_max + 1)
-
-    ax.set_xlim(left=1)
-
-    # ---------- LEGEND ----------
-    leg = ax.legend(frameon=False)
-    for text in leg.get_texts():
-        text.set_color("white")
-
-    plt.tight_layout()
-
-    # ---------- EXPORT ----------
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
-    buf.seek(0)
-
-    img = base64.b64encode(buf.read()).decode("utf-8")
-
-    return {"image": img}  # @app.get("/sessionDetails")
+def compare_drivers(year: int = Query(..., ge=1950, le=2100),
+                    round_number: int = Query(..., ge=0),
+                    drivers: str = Query(..., min_length=1, max_length=200),
+                    identifier: str = Query(..., min_length=1, max_length=64)):
+    with data_errors():
+        session = get_session(year, round_number, identifier)
+        selected = list(dict.fromkeys(d.strip() for d in drivers.split(",") if d.strip()))
+        if not selected or len(selected) > 20:
+            raise HTTPException(422, "Select between 1 and 20 drivers.")
+        series = []
+        for driver in selected:
+            laps = session.laps.pick_drivers(driver)
+            valid = laps.dropna(subset=["LapNumber", "LapTime"])
+            if valid.empty:
+                raise HTTPException(404, f"No lap times available for driver {driver}.")
+            series.append((driver, valid))
+        with plot_lock:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            try:
+                fig.patch.set_facecolor("#0B0B0B")
+                ax.set_facecolor("#0B0B0B")
+                ax.tick_params(colors="white")
+                ax.set_title("Driver Comparison - Lap Time Analysis", color="white")
+                ax.set_xlabel("Lap Number", color="white")
+                ax.set_ylabel("Lap Time (seconds)", color="white")
+                ax.grid(True, linestyle="--", alpha=0.2, color="white")
+                for driver, laps in series:
+                    ax.plot(laps["LapNumber"], laps["LapTime"].dt.total_seconds(), label=driver)
+                ax.set_xlim(left=1)
+                for text in ax.legend(frameon=False).get_texts():
+                    text.set_color("white")
+                fig.tight_layout()
+                return encode_figure(fig)
+            finally:
+                plt.close(fig)
 
 
 @app.get("/track-map")
-async def track_map(year: int, round_number: int, identifier: str):
-    session = fastf1.get_session(year, round_number, identifier)
-    session.load()
-    lap = session.laps.pick_fastest()  # Because fastest lap is clean and complete
-    pos = lap.get_pos_data()
-    circuit = session.get_circuit_info()
-    track = pos.loc[:, ("X", "Y")].to_dict(orient="records")
-    corners = circuit.corners.to_dict(orient="records")
-    return {
-        "rotation": float(circuit.rotation),
-        "track": track,
-        "corners": corners
-    }
+def track_map(year: int = Query(..., ge=1950, le=2100),
+              round_number: int = Query(..., ge=0),
+              identifier: str = Query(..., min_length=1, max_length=64)):
+    with data_errors():
+        session = get_session(year, round_number, identifier)
+        if session.laps.empty:
+            raise HTTPException(404, "No laps available for this session.")
+        lap = session.laps.pick_fastest()
+        if lap is None or lap.empty or pd.isna(lap.get("LapTime")):
+            raise HTTPException(404, "No timed lap available for the track map.")
+        positions = lap.get_pos_data()
+        if positions.empty:
+            raise HTTPException(404, "Track position data is unavailable.")
+        track = positions.loc[:, ["X", "Y"]].dropna()
+        if track.empty:
+            raise HTTPException(404, "Track position data is unavailable.")
+        circuit = session.get_circuit_info()
+        return json_safe({"rotation": circuit.rotation, "track": track, "corners": circuit.corners})
+
+
+@app.get("/lapTimeDistribution")
+def lap_time_distribution(year: int = Query(..., ge=1950, le=2100),
+                          identifier: str = Query(..., min_length=1, max_length=64),
+                          round_number: int | None = Query(None, ge=0),
+                          country: str | None = Query(None, min_length=1, max_length=200)):
+    if round_number is None and country is None:
+        raise HTTPException(422, "Provide round_number or country.")
+    with data_errors():
+        if round_number is None:
+            round_number = int(fastf1.get_event(year, country)["RoundNumber"])
+        session = get_session(year, round_number, identifier)
+        podium = session.results.sort_values("Position").head(3)
+        if podium.empty:
+            raise HTTPException(404, "Session classification is unavailable.")
+        laps = session.laps.pick_drivers(podium["DriverNumber"].tolist()).pick_quicklaps().copy()
+        laps["LapTime(s)"] = laps["LapTime"].dt.total_seconds()
+        laps = laps.dropna(subset=["LapTime(s)"])
+        if laps.empty:
+            raise HTTPException(404, "No lap times available for this session.")
+        order = podium["Abbreviation"].tolist()
+        with plot_lock:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            try:
+                sns.violinplot(data=laps, x="Driver", y="LapTime(s)", hue="Driver",
+                               inner=None, density_norm="area", order=order, ax=ax)
+                sns.stripplot(data=laps, x="Driver", y="LapTime(s)", hue="Compound",
+                              order=order, size=3, ax=ax)
+                ax.set_title(f"{year} {session.event['EventName']} Lap Time Distribution")
+                ax.set_ylabel("Lap Time (seconds)")
+                fig.tight_layout()
+                return encode_figure(fig)
+            finally:
+                plt.close(fig)
 
 
 @app.websocket("/ws/live")
 async def live_feed(ws: WebSocket):
     await ws.accept()
-
-    while True:
-        async with httpx.AsyncClient() as client:
-            r = await client.get(
-                "https://api.openf1.org/v1/position"
-            )
-
-            data = r.json()
-
-        await ws.send_json(data)
-
-        await asyncio.sleep(1)
-
-
-@app.get("/lapTimeDistribution")
-async def lap_time_distribution(year: int, country: str, identifier: str):
-    fastf1.plotting.setup_mpl(mpl_timedelta_support=True, color_scheme='fastf1')
-    race = fastf1.get_session(year, country, identifier)
-    race.load()
-
-    # derive top 3 finishers from classification (podium), not internal driver order
-    classification = race.results.sort_values("Position")
-    podium = classification.head(3)
-
-    point_finishers = podium["DriverNumber"].tolist()
-    driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
-
-    driver_laps = driver_laps.reset_index()
-
-    finishing_order = podium["Abbreviation"].tolist()
-
-    # create the figure
-    fix, ax = plt.subplots(figsize=(10, 6))
-
-    # Since 'seaborn' doesnt have proper timedelta support, we should convert timedelta to float (in sec)
-    driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
-    sns.violinplot(data=driver_laps,
-                   x="Driver",
-                   y="LapTime(s)",
-                   hue="Driver",
-                   inner=None,
-                   density_norm="area",
-                   order=finishing_order,
-                   palette=fastf1.plotting.get_driver_color_mapping(session=race)
-                   )
-
-    sns.swarmplot(data=driver_laps,
-                  x="Driver",
-                  y="LapTime(s)",
-                  order=finishing_order,
-                  hue="Compound",
-                  palette=fastf1.plotting.get_compound_mapping(session=race),
-                  hue_order=["SOFT", "MEDIUM", "HARD"],
-                  linewidth=0,
-                  size=4,
-                  )
-    ax.set_xlabel("Driver")
-    ax.set_ylabel("Lap Time (s)")
-    plt.suptitle(f"{year} {country} Grand Prix Lap Time Distribution")
-    plt.tight_layout()
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
-    buf.seek(0)
-
-    img = base64.b64encode(buf.read()).decode("utf-8")
-
-    return {"image": img}  # @app.get("/sessionDetails")
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            while True:
+                # Unfiltered /position is the full multi-MB history; poll only the latest session.
+                response = await client.get("https://api.openf1.org/v1/position",
+                                            params={"session_key": "latest"})
+                response.raise_for_status()
+                await ws.send_json(response.json())
+                await asyncio.sleep(1)
+    except WebSocketDisconnect:
+        pass
+    except (httpx.HTTPError, ValueError):
+        logger.warning("Live position upstream unavailable", exc_info=True)
+        await ws.close(code=1011, reason="Live data unavailable")

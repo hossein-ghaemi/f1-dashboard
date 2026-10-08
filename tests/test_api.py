@@ -1,0 +1,111 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
+import threading
+
+from fastapi.testclient import TestClient
+import httpx
+import pandas as pd
+import pytest
+
+import main
+
+PARAMS = {"year": 2024, "round_number": 1, "identifier": "Race"}
+
+
+@pytest.fixture
+def session():
+    return SimpleNamespace(
+        event={"Country": "Bahrain", "RoundNumber": 1, "EventName": "Bahrain Grand Prix"},
+        session_info={"Meeting": {"Name": "Bahrain"}},
+        results=pd.DataFrame([{"DriverNumber": "1", "Position": 1,
+                               "Time": pd.Timedelta(seconds=5400), "TeamName": "Team"},
+                              {"DriverNumber": "2", "Position": 2, "Time": pd.NaT}]),
+        laps=pd.DataFrame({"LapNumber": [1, 2, 1, 2]}),
+        track_status=pd.DataFrame({"Time": [pd.Timedelta(seconds=0)], "Status": ["1"]}),
+    )
+
+
+def test_details_without_meeting_number_and_missing_times(monkeypatch, session):
+    monkeypatch.setattr(main, "get_session", lambda *args: session)
+    response = TestClient(main.app).get("/sessionDetails", params=PARAMS)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["round_number"] == 1
+    assert data["total_laps"] == 2  # Race distance, not four driver-lap records.
+    assert data["drivers"]["1"]["Time"] == 5400
+    assert data["drivers"]["2"]["Time"] is None
+    assert isinstance(data["results"], list)
+    assert data["track_status"][0]["Time"] == 0
+
+
+def test_invalid_inputs_do_not_fetch_data(monkeypatch):
+    def forbidden(*args):
+        pytest.fail("Invalid input reached FastF1 loader")
+    monkeypatch.setattr(main, "get_session", forbidden)
+    client = TestClient(main.app)
+    for replacement in [{"year": 1800}, {"round_number": -1}, {"identifier": ""}]:
+        assert client.get("/sessionDetails", params=PARAMS | replacement).status_code == 422
+
+
+def test_empty_track_returns_actionable_error(monkeypatch, session):
+    session.laps = pd.DataFrame()
+    monkeypatch.setattr(main, "get_session", lambda *args: session)
+    response = TestClient(main.app).get("/track-map", params=PARAMS)
+    assert response.status_code == 404
+    assert response.json()["detail"]
+
+
+def test_upstream_failure_is_controlled(monkeypatch):
+    def broken(*args):
+        raise RuntimeError("private upstream details")
+    monkeypatch.setattr(main, "get_session", broken)
+    response = TestClient(main.app).get("/sessionDetails", params=PARAMS)
+    assert response.status_code == 502
+    assert "private upstream" not in response.text
+
+
+def test_health_responds_while_session_load_is_blocked(monkeypatch, session):
+    entered, release = threading.Event(), threading.Event()
+    def slow(*args):
+        entered.set()
+        if not release.wait(5):
+            raise RuntimeError("blocked event loop")
+        return session
+    monkeypatch.setattr(main, "get_session", slow)
+    async def scenario():
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=main.app), base_url="http://test") as client:
+            pending = asyncio.create_task(client.get("/sessionDetails", params=PARAMS))
+            try:
+                assert await asyncio.to_thread(entered.wait, 2)
+                response = await asyncio.wait_for(client.get("/health"), timeout=1)
+                assert response.json() == {"status": "ok"}
+            finally:
+                release.set()
+                await pending
+    asyncio.run(scenario())
+
+
+def test_session_without_loaded_data_is_not_found(monkeypatch):
+    from fastf1.exceptions import DataNotLoadedError
+    class Unloaded(SimpleNamespace):
+        @property
+        def laps(self):
+            raise DataNotLoadedError("not loaded")
+    monkeypatch.setattr(main, "get_session", lambda *args: Unloaded())
+    response = TestClient(main.app).get("/track-map", params=PARAMS)
+    assert response.status_code == 404
+
+
+def test_live_feed_polls_latest_session_only(monkeypatch):
+    requested = []
+    def handler(request):
+        requested.append(request.url)
+        return httpx.Response(200, json=[{"driver_number": 1, "position": 1}])
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr(main.httpx, "AsyncClient",
+                        lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw))
+    with TestClient(main.app).websocket_connect("/ws/live") as ws:
+        assert ws.receive_json() == [{"driver_number": 1, "position": 1}]
+    assert requested[0].params["session_key"] == "latest"
+
