@@ -2,13 +2,12 @@
 
 import {useState} from "react";
 import DriverDetails from "./DriverDetails";
-import useDriver from "@/hooks/useDriver";
 
 
 export default function PodiumBlock({data, height, label, highlight}) {
 
     const [openDriverDetails, setOpenDriverDetails] = useState(false);
-    if (!data) return;
+    if (!data) return null;
 
     return (<>
         {/* Modal */}
@@ -24,13 +23,12 @@ export default function PodiumBlock({data, height, label, highlight}) {
                 <button
                     className="text-lg font-bold"
                     onClick={() => setOpenDriverDetails(true)}
-                    onClose={() => setOpenDriverDetails(false)}
                 >
                     #{`${data.DriverNumber} - ${data.FullName}`}
                 </button>
 
                 <div className="text-xs opacity-70">
-                    {label} - {data.Time.toFixed(4)}
+                    {label} - {data.Time != null ? Number(data.Time).toFixed(4) : "-"}
                 </div>
 
             </div>

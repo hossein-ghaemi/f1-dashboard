@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState, useMemo } from "react";
 import { getSessions } from "../services/api";
 import { useRouter } from "next/navigation";
@@ -6,15 +7,29 @@ export default function SessionList({ year }) {
     const router = useRouter();
     const [sessions, setSessions] = useState([]);
     const [openCountry, setOpenCountry] = useState(null);
+    const [error, setError] = useState(null);
     useEffect(() => {
         if (!year) return;
 
-        getSessions(year).then(setSessions);
+        let cancelled = false;
+        getSessions(year)
+            .then((data) => {
+                if (cancelled) return;
+                setSessions(Array.isArray(data) ? data : []);
+                setError(null);
+            })
+            .catch(() => {
+                if (!cancelled) setError("Unable to load sessions. Please try again later.");
+            });
+        return () => {
+            cancelled = true;
+        };
     }, [year]);
 
     // Group events by country
     const grouped = useMemo(() => {
         return sessions.reduce((acc, event) => {
+            if (!event?.Country) return acc;
             if (!acc[event.Country]) {
                 acc[event.Country] = [];
             }
@@ -27,6 +42,7 @@ export default function SessionList({ year }) {
 
     return (<div className="space-y-3">
         <div className="text-white text-5xl border-b-2 py-3 mb-4"><h2>Sessions</h2></div>
+        {error && <p className="text-red-400">{error}</p>}
         {Object.entries(grouped).map(([country, events]) => (<div
             key={country}
             className=" dark:border-gray-700">
@@ -34,7 +50,7 @@ export default function SessionList({ year }) {
             <button
                 onClick={() => setOpenCountry(openCountry === country ? null : country)}
                 className="w-full rounded-lg  text-left font-medium bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-300 bg-center bg-cover background-blend-mode" style={{
-                    backgroundImage: `url(/images/flags/${country.toLocaleLowerCase().replace(" ", "")}.jpeg)`,
+                    backgroundImage: `url(/images/flags/${country.toLocaleLowerCase().replace(/\s/g, "")}.jpeg)`,
                 }}>
                 <div className="" style={{ background: "linear-gradient(45deg, #00000061, transparent)",padding: "50px" }}>{country}</div>
             </button>

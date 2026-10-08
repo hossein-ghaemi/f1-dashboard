@@ -1,5 +1,4 @@
 "use client";
-import {useEffect, useState, useMemo} from "react";
 
 function PodiumBlock({ data, height, label, highlight }) {
   if (!data) return null;
@@ -9,7 +8,7 @@ function PodiumBlock({ data, height, label, highlight }) {
 
       {/* Driver info */}
       <div className="mb-2 text-center text-gray-300">
-        <button onClick="" className="text-lg font-bold">
+        <button className="text-lg font-bold">
           #{data.driver_number}
         </button>
         <div className="text-xs opacity-70">

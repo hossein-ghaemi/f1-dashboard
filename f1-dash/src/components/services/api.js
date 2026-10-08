@@ -1,15 +1,17 @@
 // src/services/api.js
 import axios from "axios";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export const getSessions = async (year = (new Date().getFullYear())) => {
-    const res = await axios.get(`${API_BASE}/f1Sessions`);
+    const res = await axios.get(`${API_BASE}/f1Sessions`, { params: { year } });
     return res.data;
 };
 
 export const getSessionDetails = async (year, round_number, identifier) => {
-    const res = await axios.get(`${API_BASE}/sessionDetails?year=${year}&round_number=${round_number}&identifier=${identifier}`);
+    const res = await axios.get(`${API_BASE}/sessionDetails`, {
+        params: { year, round_number, identifier },
+    });
     return res.data;
 };
 
@@ -38,11 +40,11 @@ export const compareDrivers = async (year, round_number, drivers, identifier) =>
     return res.data;
 };
 
-export const lapTimeDistribution = async (year, country, identifier) => {
+export const lapTimeDistribution = async (year, round_number, identifier) => {
     const res = await axios.get(`${API_BASE}/lapTimeDistribution`, {
         params: {
             year,
-            country,
+            round_number,
             identifier
         },
     });

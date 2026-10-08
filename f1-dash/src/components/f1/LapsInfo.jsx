@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {getLaps} from "../services/api";
 
-export default function LapChart({sessionKey, sessionData}) {
+export default function LapChart({sessionKey}) {
     const [laps, setLaps] = useState([]);
     const router = useRouter();
 

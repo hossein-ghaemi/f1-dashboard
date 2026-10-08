@@ -1,7 +1,5 @@
 "use client";
 
-import useDriver from "@/hooks/useDriver";
-
 export default function DriverDetails({data, onClose}) {
 
 

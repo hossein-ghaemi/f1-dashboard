@@ -1,17 +1,18 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect, useMemo } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import { compareDrivers, getSessionDetails, lapTimeDistribution } from "@/components/services/api";
 import PodiumBlocks from "@/components/f1/positions/PodiumBlocks";
 import OtherPositions from "@/components/f1/positions/OtherPositions";
-import TrackMap from "../track_map/page";
+import TrackMap from "@/components/f1/TrackMap";
 type Driver = {
     Abbreviation: string;
-    Position: string;
-    Driver: string;
+    Position: number | null;
+    DriverNumber: string;
+    FullName: string;
     Team: string;
-    Time: string;
+    Time: number | null;
 };
 
 type SessionDetailsData = {
@@ -22,9 +23,9 @@ type SessionDetailsData = {
     session_info: {
         Type: string;
         SessionStatus: string;
-        [key: string]: any; // for any additional fields
+        [key: string]: unknown; // for any additional fields
     };
-    round_number: string;
+    round_number: number;
     drivers: Record<string, Driver>;
 };
 
@@ -32,38 +33,51 @@ type CompareResponse = {
     image: string; // base64 encoded image
 };
 
-export default function SessionDetails() {
+function SessionDetails() {
     const searchParams = useSearchParams();
 
     const year = searchParams.get("year");
     const round = searchParams.get("round");
     const session = searchParams.get("session");
 
-    const [compareImg, setCompareImg] = useState(null);
-    const [lapDistributionImg, setLapDistributionImg] = useState(null);
-    const [sessionDetails, setSession] = useState(null);
+    const [compareImg, setCompareImg] = useState<string | null>(null);
+    const [lapDistributionImg, setLapDistributionImg] = useState<string | null>(null);
+    const [sessionDetails, setSession] = useState<SessionDetailsData | null>(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     // ---------------- FETCH SESSION ----------------
     useEffect(() => {
         if (!year || !round || !session) return;
 
+        let cancelled = false;
         const fetchData = async () => {
             setLoading(true);
+            setError(null);
+            setSession(null);
+            setCompareImg(null);
+            setLapDistributionImg(null);
             try {
                 const data = await getSessionDetails(year, round, session);
-                setSession(data);
+                if (!cancelled) setSession(data);
+            } catch {
+                if (!cancelled) setError("Unable to load session details. Please try again later.");
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
 
         fetchData();
+        return () => {
+            cancelled = true;
+        };
     }, [year, round, session]);
 
     // ---------------- DERIVED DATA (SAFE) ----------------
     const sortedDrivers = useMemo(() => {
+        // Unclassified drivers (null Position, e.g. practice) go last.
+        const pos = (d: Driver) => (d.Position == null ? Infinity : Number(d.Position));
         return Object.values(sessionDetails?.drivers || {}).sort(
-            (a, b) => Number(a.Position) - Number(b.Position)
+            (a, b) => pos(a) - pos(b)
         );
     }, [sessionDetails]);
 
@@ -76,32 +90,43 @@ export default function SessionDetails() {
     useEffect(() => {
         if (!sessionDetails || !driversString) return;
 
-        lapTimeDistribution(
-            year,
-            sessionDetails.event_name,
-            sessionDetails.session_info?.Type
-        ).then((res) => {
-            setLapDistributionImg(res.image);
-        });
-    }, [year, sessionDetails, driversString]);
+        let cancelled = false;
+        lapTimeDistribution(year, round, session)
+            .then((res: CompareResponse) => {
+                if (!cancelled) setLapDistributionImg(res.image);
+            })
+            .catch(() => {
+                if (!cancelled) setLapDistributionImg(null);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [year, round, session, sessionDetails, driversString]);
 
     // ---------------- COMPARE PLOT ----------------
     useEffect(() => {
         if (!sessionDetails || !driversString) return;
 
-        compareDrivers(
-            year,
-            sessionDetails.round_number,
-            driversString,
-            sessionDetails.session_info?.Type
-        ).then((res) => {
-            setCompareImg(res.image);
-        });
-    }, [year, sessionDetails, driversString]);
+        let cancelled = false;
+        compareDrivers(year, round, driversString, session)
+            .then((res: CompareResponse) => {
+                if (!cancelled) setCompareImg(res.image);
+            })
+            .catch(() => {
+                if (!cancelled) setCompareImg(null);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [year, round, session, sessionDetails, driversString]);
 
     // ---------------- LOADING STATES ----------------
     if (loading) {
         return <div className="p-6 text-white">Loading session details...</div>;
+    }
+
+    if (error) {
+        return <div className="p-6 text-red-400">{error}</div>;
     }
 
     if (!sessionDetails) {
@@ -194,5 +219,13 @@ export default function SessionDetails() {
                 </pre>
             </div>
         </div>
+    );
+}
+
+export default function SessionDetailsPage() {
+    return (
+        <Suspense fallback={<div className="p-6 text-white">Loading session details...</div>}>
+            <SessionDetails />
+        </Suspense>
     );
 }
