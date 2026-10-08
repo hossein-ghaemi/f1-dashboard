@@ -74,3 +74,18 @@ export const raceStrategy = async (year, round_number, identifier) => {
     });
     return res.data;
 };
+
+export const liveSessions = async (year) => {
+    const res = await axios.get(`${API_BASE}/live/sessions`, { params: { year } });
+    return res.data;
+};
+
+export const liveSession = async (session_key) => {
+    const res = await axios.get(`${API_BASE}/live/session`, { params: { session_key } });
+    return res.data;
+};
+
+export const liveSnapshot = async (session_key, t) => {
+    const res = await axios.get(`${API_BASE}/live/snapshot`, { params: { session_key, t } });
+    return res.data;
+};

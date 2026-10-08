@@ -5,13 +5,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-red-600 focus:p-3">Skip to content</a>
       <header className="border-b border-white/10 bg-zinc-950/95">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
           <Link href="/f1" className="flex items-center gap-3" aria-label="F1 Dashboard home">
             <span className="rounded-md bg-red-600 px-3 py-1.5 text-xl font-black italic tracking-tighter">F1</span>
             <span className="text-sm font-semibold tracking-wide">SESSION EXPLORER</span>
           </Link>
-          <nav aria-label="Main navigation" className="flex gap-1">
+          <nav aria-label="Main navigation" className="flex flex-wrap gap-1">
             <Link href="/f1" className="rounded-lg px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-white">Seasons & sessions</Link>
+            <Link href="/f1/live" className="rounded-lg px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-white">Live</Link>
             <Link href="/f1/standings" className="rounded-lg px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-white">Driver standings</Link>
           </nav>
         </div>
