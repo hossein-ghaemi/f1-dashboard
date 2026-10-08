@@ -97,19 +97,6 @@ def test_session_without_loaded_data_is_not_found(monkeypatch):
     assert response.status_code == 404
 
 
-def test_live_feed_polls_latest_session_only(monkeypatch):
-    requested = []
-    def handler(request):
-        requested.append(request.url)
-        return httpx.Response(200, json=[{"driver_number": 1, "position": 1}])
-    real_client = httpx.AsyncClient
-    monkeypatch.setattr(main.httpx, "AsyncClient",
-                        lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw))
-    with TestClient(main.app).websocket_connect("/ws/live") as ws:
-        assert ws.receive_json() == [{"driver_number": 1, "position": 1}]
-    assert requested[0].params["session_key"] == "latest"
-
-
 def test_race_strategy_groups_stints_in_finishing_order(monkeypatch, session):
     session.results = pd.DataFrame([{"Abbreviation": "LEC", "Position": 2},
                                     {"Abbreviation": "VER", "Position": 1}])

@@ -1,5 +1,4 @@
 """HTTP API for historical F1 schedules, sessions, and charts."""
-import asyncio
 import base64
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timezone
@@ -12,15 +11,16 @@ import threading
 import fastf1
 from fastf1.ergast import Ergast
 from fastf1.exceptions import DataNotLoadedError
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-import httpx
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from backend.live import LiveService
+from backend.openf1 import LiveDataError, OpenF1Client
 from backend.runtime import SessionCache, json_safe
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ async def lifespan(app):
     cache_dir.mkdir(parents=True, exist_ok=True)
     fastf1.Cache.enable_cache(str(cache_dir))
     yield
+    await live_service.client.aclose()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -52,6 +53,8 @@ def load_session(year, round_number, identifier):
     session.load(weather=False)
     return session
 
+
+live_service = LiveService(OpenF1Client(os.getenv("OPENF1_USERNAME"), os.getenv("OPENF1_PASSWORD")))
 
 session_cache = SessionCache(
     load_session,
@@ -296,20 +299,31 @@ def lap_time_distribution(year: int = Query(..., ge=1950, le=2100),
                 plt.close(fig)
 
 
-@app.websocket("/ws/live")
-async def live_feed(ws: WebSocket):
-    await ws.accept()
+@contextmanager
+def live_errors():
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            while True:
-                # Unfiltered /position is the full multi-MB history; poll only the latest session.
-                response = await client.get("https://api.openf1.org/v1/position",
-                                            params={"session_key": "latest"})
-                response.raise_for_status()
-                await ws.send_json(response.json())
-                await asyncio.sleep(1)
-    except WebSocketDisconnect:
-        pass
-    except (httpx.HTTPError, ValueError):
-        logger.warning("Live position upstream unavailable", exc_info=True)
-        await ws.close(code=1011, reason="Live data unavailable")
+        yield
+    except LiveDataError as exc:
+        raise HTTPException(exc.status, str(exc)) from exc
+
+
+@app.get("/live/sessions")
+async def live_sessions(year: int = Query(datetime.now(timezone.utc).year, ge=2023, le=2100)):
+    with live_errors():
+        return {"authenticated": live_service.client.authenticated,
+                "sessions": await live_service.available_sessions(year)}
+
+
+@app.get("/live/session")
+async def live_session(session_key: int | None = Query(None, ge=1)):
+    with live_errors():
+        return json_safe(await live_service.info(session_key))
+
+
+@app.get("/live/snapshot")
+async def live_snapshot(session_key: int | None = Query(None, ge=1),
+                        t: datetime | None = Query(None)):
+    if t is not None and t.tzinfo is None:
+        t = t.replace(tzinfo=timezone.utc)
+    with live_errors():
+        return json_safe(await live_service.snapshot(session_key, t.timestamp() if t else None))

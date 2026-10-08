@@ -41,6 +41,7 @@ Export backend environment variables before starting Uvicorn:
 | `F1_SESSION_CACHE_SIZE` | Maximum number of loaded sessions retained in memory. |
 | `F1_SESSION_CACHE_TTL_SECONDS` | Loaded-session cache lifetime. |
 | `CORS_ORIGINS` | Comma-separated allowed frontend origins. |
+| `OPENF1_USERNAME`, `OPENF1_PASSWORD` | Optional OpenF1 sponsor account. Without it the Live page replays finished sessions; with it, sessions in progress stream live. |
 
 The frontend uses `NEXT_PUBLIC_API_BASE_URL` for its browser-facing API URL, defaulting to `http://localhost:8000`. Set it in `f1-dash/.env.local` and restart development or rebuild production assets when changing it. This value is public and must not contain secrets.
 
