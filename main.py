@@ -10,6 +10,7 @@ from pathlib import Path
 import threading
 
 import fastf1
+from fastf1.ergast import Ergast
 from fastf1.exceptions import DataNotLoadedError
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -134,6 +135,27 @@ def get_session_details(year: int = Query(..., ge=1950, le=2100),
             "results": records,
             "session_info": session.session_info,
             "track_status": session.track_status,
+        })
+
+
+@app.get("/driverStandings")
+def driver_standings(year: int = Query(..., ge=1950, le=2100),
+                     round_number: int | None = Query(None, ge=1)):
+    with data_errors():
+        response = Ergast().get_driver_standings(season=year, round=round_number)
+        if not response.content or response.content[0].empty:
+            raise HTTPException(404, "Driver standings are unavailable.")
+        standings = response.content[0]
+        return json_safe({
+            "year": year,
+            "round": int(response.description["round"].iloc[0]),
+            "standings": [{
+                "position": row["position"], "points": row["points"], "wins": row["wins"],
+                "driver_id": row["driverId"], "driver_number": row["driverNumber"],
+                "code": row["driverCode"], "given_name": row["givenName"],
+                "family_name": row["familyName"], "nationality": row["driverNationality"],
+                "teams": list(row["constructorNames"]),
+            } for _, row in standings.iterrows()],
         })
 
 

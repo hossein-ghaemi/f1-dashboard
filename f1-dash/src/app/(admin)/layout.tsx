@@ -10,7 +10,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="rounded-md bg-red-600 px-3 py-1.5 text-xl font-black italic tracking-tighter">F1</span>
             <span className="text-sm font-semibold tracking-wide">SESSION EXPLORER</span>
           </Link>
-          <nav aria-label="Main navigation"><Link href="/f1" className="rounded-lg px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-white">Seasons & sessions</Link></nav>
+          <nav aria-label="Main navigation" className="flex gap-1">
+            <Link href="/f1" className="rounded-lg px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-white">Seasons & sessions</Link>
+            <Link href="/f1/standings" className="rounded-lg px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-white">Driver standings</Link>
+          </nav>
         </div>
       </header>
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>

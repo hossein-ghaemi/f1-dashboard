@@ -109,3 +109,35 @@ def test_live_feed_polls_latest_session_only(monkeypatch):
         assert ws.receive_json() == [{"driver_number": 1, "position": 1}]
     assert requested[0].params["session_key"] == "latest"
 
+
+class FakeErgast:
+    def __init__(self, content):
+        self.content = content
+
+    def __call__(self):
+        return self
+
+    def get_driver_standings(self, season, round):
+        self.requested = (season, round)
+        return SimpleNamespace(description=pd.DataFrame({"season": [season], "round": [5]}),
+                               content=self.content)
+
+
+def test_driver_standings(monkeypatch):
+    fake = FakeErgast([pd.DataFrame([{
+        "position": 1, "points": 110.0, "wins": 4, "driverId": "max_verstappen",
+        "driverNumber": 33, "driverCode": "VER", "givenName": "Max", "familyName": "Verstappen",
+        "driverNationality": "Dutch", "constructorNames": ["Red Bull"],
+    }])])
+    monkeypatch.setattr(main, "Ergast", fake)
+    response = TestClient(main.app).get("/driverStandings", params={"year": 2024, "round_number": 5})
+    assert response.status_code == 200
+    assert fake.requested == (2024, 5)
+    data = response.json()
+    assert data["round"] == 5
+    assert data["standings"][0]["code"] == "VER" and data["standings"][0]["teams"] == ["Red Bull"]
+
+
+def test_driver_standings_empty_season_is_not_found(monkeypatch):
+    monkeypatch.setattr(main, "Ergast", FakeErgast([]))
+    assert TestClient(main.app).get("/driverStandings", params={"year": 2100}).status_code == 404

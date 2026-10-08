@@ -61,3 +61,10 @@ export const trackMap = async (year, round_number, identifier) => {
     });
     return res.data;
 };
+export const driverStandings = async (year, round_number) => {
+    const res = await axios.get(`${API_BASE}/driverStandings`, {
+        params: { year, round_number },
+    });
+    return res.data;
+};
+
