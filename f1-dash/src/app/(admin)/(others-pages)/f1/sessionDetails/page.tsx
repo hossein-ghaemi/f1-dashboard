@@ -6,6 +6,7 @@ import { compareDrivers, getSessionDetails, lapTimeDistribution } from "@/compon
 import PodiumBlocks from "@/components/f1/positions/PodiumBlocks";
 import OtherPositions from "@/components/f1/positions/OtherPositions";
 import TrackMap from "@/components/f1/TrackMap";
+import RaceStrategy from "@/components/f1/RaceStrategy";
 type Driver = {
     Abbreviation: string;
     Position: number | null;
@@ -211,6 +212,15 @@ function SessionDetails() {
                 )}
                 <OtherPositions results={others} />
             </div>
+
+            {/* More info */}
+            <details open className="border rounded-xl p-5 bg-white dark:bg-gray-900">
+                <summary className="cursor-pointer text-lg font-semibold">More info</summary>
+                <div className="mt-4 space-y-3">
+                    <h3 className="font-semibold text-white">Tyre strategy</h3>
+                    <RaceStrategy year={year} round={round} session={session} />
+                </div>
+            </details>
 
             {/* Debug */}
             <div className="border rounded-xl p-5 bg-white dark:bg-gray-900">

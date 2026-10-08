@@ -68,3 +68,9 @@ export const driverStandings = async (year, round_number) => {
     return res.data;
 };
 
+export const raceStrategy = async (year, round_number, identifier) => {
+    const res = await axios.get(`${API_BASE}/raceStrategy`, {
+        params: { year, round_number, identifier },
+    });
+    return res.data;
+};

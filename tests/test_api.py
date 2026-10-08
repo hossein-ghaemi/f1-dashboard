@@ -110,6 +110,36 @@ def test_live_feed_polls_latest_session_only(monkeypatch):
     assert requested[0].params["session_key"] == "latest"
 
 
+def test_race_strategy_groups_stints_in_finishing_order(monkeypatch, session):
+    session.results = pd.DataFrame([{"Abbreviation": "LEC", "Position": 2},
+                                    {"Abbreviation": "VER", "Position": 1}])
+    session.laps = pd.DataFrame({
+        "Driver": ["VER", "VER", "VER", "LEC", "LEC", "LEC"],
+        "LapNumber": [1, 2, 3, 1, 2, 3],
+        "Stint": [1, 1, 2, 1, 1, 1],
+        "Compound": ["SOFT", "SOFT", "HARD", "MEDIUM", "MEDIUM", "MEDIUM"],
+        "TyreLife": [1, 2, 1, 3, 4, 5],
+        "FreshTyre": [True, True, True, False, False, False],
+    })
+    monkeypatch.setattr(main, "get_session", lambda *args: session)
+    response = TestClient(main.app).get("/raceStrategy", params=PARAMS)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_laps"] == 3
+    assert [d["driver"] for d in data["drivers"]] == ["VER", "LEC"]
+    ver, lec = data["drivers"]
+    assert ver["pit_stops"] == 1
+    assert ver["stints"][1] == {"stint": 2, "compound": "HARD", "start_lap": 3, "end_lap": 3,
+                                     "laps": 1, "fresh_tyre": True, "start_tyre_age": 1}
+    assert lec["pit_stops"] == 0 and lec["stints"][0]["start_tyre_age"] == 3
+
+
+def test_race_strategy_without_laps_is_not_found(monkeypatch, session):
+    session.laps = pd.DataFrame()
+    monkeypatch.setattr(main, "get_session", lambda *args: session)
+    assert TestClient(main.app).get("/raceStrategy", params=PARAMS).status_code == 404
+
+
 class FakeErgast:
     def __init__(self, content):
         self.content = content

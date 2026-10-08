@@ -159,6 +159,43 @@ def driver_standings(year: int = Query(..., ge=1950, le=2100),
         })
 
 
+@app.get("/raceStrategy")
+def race_strategy(year: int = Query(..., ge=1950, le=2100),
+                  round_number: int = Query(..., ge=0),
+                  identifier: str = Query(..., min_length=1, max_length=64)):
+    with data_errors():
+        session = get_session(year, round_number, identifier)
+        laps = session.laps
+        if laps.empty or "Stint" not in laps:
+            raise HTTPException(404, "No stint data available for this session.")
+        laps = laps.dropna(subset=["Stint", "LapNumber"])
+        order = session.results.sort_values("Position", na_position="last")["Abbreviation"].tolist()
+        order += [d for d in laps["Driver"].unique() if d not in order]
+        drivers = []
+        for driver in order:
+            driver_laps = laps[laps["Driver"] == driver]
+            if driver_laps.empty:
+                continue
+            stints = []
+            for stint, group in driver_laps.groupby("Stint", sort=True):
+                compound = group["Compound"].dropna()
+                tyre_life = group["TyreLife"].dropna() if "TyreLife" in group else pd.Series(dtype=float)
+                stints.append({
+                    "stint": int(stint),
+                    "compound": compound.iloc[0] if not compound.empty else "UNKNOWN",
+                    "start_lap": int(group["LapNumber"].min()),
+                    "end_lap": int(group["LapNumber"].max()),
+                    "laps": int(len(group)),
+                    "fresh_tyre": bool(group["FreshTyre"].iloc[0]) if "FreshTyre" in group
+                    and pd.notna(group["FreshTyre"].iloc[0]) else None,
+                    "start_tyre_age": int(tyre_life.iloc[0]) if not tyre_life.empty else None,
+                })
+            drivers.append({"driver": driver, "pit_stops": max(len(stints) - 1, 0), "stints": stints})
+        if not drivers:
+            raise HTTPException(404, "No stint data available for this session.")
+        return json_safe({"total_laps": int(laps["LapNumber"].max()), "drivers": drivers})
+
+
 def encode_figure(fig):
     with io.BytesIO() as buf:
         fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
